@@ -2,8 +2,9 @@ package org.java.nation;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.util.Scanner;
 
 public class Main {
 
@@ -17,17 +18,23 @@ public class Main {
 			
 			System.out.println("Connessione stabilita correttamente");
 			
-			Statement statement = conn.createStatement();
+			Scanner scanner = new Scanner(System.in);
+            System.out.print("Ricerca una nazione: ");
+            String searchString = scanner.nextLine();
 			
-			String query = "SELECT c.NAME AS Nazione, c.COUNTRY_ID AS ID, r.NAME AS Regione, ct.NAME AS Continente " +
+            String query = "SELECT c.NAME AS Nazione, c.COUNTRY_ID AS ID, r.NAME AS Regione, ct.NAME AS Continente " +
                     "FROM COUNTRIES c " +
                     "JOIN REGIONS R ON c.REGION_ID = r.REGION_ID " +
                     "JOIN CONTINENTS ct ON r.CONTINENT_ID = ct.CONTINENT_ID " +
+                    "WHERE c.NAME LIKE ? " + 
                     "ORDER BY c.NAME";
+            
+            PreparedStatement preparedStatement = conn.prepareStatement(query);
+            preparedStatement.setString(1, "%" + searchString + "%");
 			
-			ResultSet resultSet = statement.executeQuery(query);
-			
-			while (resultSet.next()) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
                 String nazione = resultSet.getString("Nazione");
                 int id = resultSet.getInt("ID");
                 String regione = resultSet.getString("Regione");
@@ -43,8 +50,6 @@ public class Main {
 			
 			System.out.println("Errore di connessione: " + e.getMessage());
 		}
-		
-		System.out.println("\n----------------------------------\n");
-		System.out.println("The end");
+
 	}
 }
